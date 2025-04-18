@@ -1,30 +1,29 @@
-import 'zone.js'; // Ensure Zone.js is loaded
 import React, { useEffect, useRef } from 'react';
-import Sample from './sample';
 
 const App = () => {
-  const containerRef = useRef(null);
+  const containerRef = useRef(null); // Ref for Angular app
+  const containerRefHelloWorld = useRef(null); // Ref for the HelloWorld component
 
   useEffect(() => {
     const loadAngularComponent = async () => {
-      // Import the necessary mount function for HelloWorldComponent
-      const helloWorldModule = await import('myAngularApp/HelloWorldMount');
-      const mountHello = helloWorldModule.default; // Import the mount function
+      // Import the Angular mount function
+      const module = await import('myAngularApp/HelloWorldMount');
+      const mount = module.default;
 
-      // Call mountHello to add the custom element to the container
+      // Mount the Angular app (including HelloWorld component) only once
       if (containerRef.current) {
-        mountHello(containerRef.current);  // Only call this to add the custom element
+        mount(containerRef.current); // Pass the container where Angular will be mounted
       }
     };
 
     loadAngularComponent();
-  }, []);
+  }, []); // Empty dependency array ensures this effect is only run once
 
   return (
     <div>
       <h1>React App</h1>
-      <Sample />
-      <div ref={containerRef}></div> {/* HelloWorld component will be mounted here */}
+      <div ref={containerRef}></div> {/* Angular app will mount here */}
+      <div ref={containerRefHelloWorld}></div> {/* HelloWorld component will mount here */}
     </div>
   );
 };
