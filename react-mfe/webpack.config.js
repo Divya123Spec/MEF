@@ -2,24 +2,33 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
 const { ModuleFederationPlugin } = require('webpack').container;
 const deps = require("./package.json").dependencies;
-
+console.log('Running Webpack with ModuleFederationPlugin');
 module.exports = {
-  entry: './src/index.js',
+  entry: path.resolve(__dirname, "src", "index.js"),
   mode: 'development',
   devServer: {
-    port: 3001,
+    static: {
+      directory: path.resolve(__dirname, ".dist")
+    },
+    port: 3000,
     open: true,
     hot: true,
+    historyApiFallback: true, 
+    headers: {
+      'Access-Control-Allow-Origin': '*', // Allow all origins (or specify your Angular app's domain)
+    },
   },
   output: {
-    publicPath: 'auto',
-    clean: true,
+    path: path.resolve(__dirname, ".dist"),
+    publicPath: "auto",
+    filename: "[name].bundle.js",
   },
   module: {
     rules: [
       {
         test: /\.jsx?$/,
-        exclude: /node_modules/,
+        include: path.resolve(__dirname, "src"),
+        exclude: path.resolve(__dirname, "node_modules"),
         use: {
           loader: 'babel-loader',
         },
@@ -38,7 +47,8 @@ module.exports = {
       name: 'reactMFE',
       filename: 'remoteEntry.js',
       exposes: {
-       
+        "./Sample": "./src/Sample.js", // Expose the Sample component
+        './SampleMount': './src/SampleMount', 
       },
       remotes: {
         myAngularApp: 'myAngularApp@http://localhost:4200/remoteEntry.js', // URL of your Angular remote
@@ -48,6 +58,7 @@ module.exports = {
         "react-dom": {
           singleton: true,
           eager:true,
+          requiredVersion: 'auto' 
         },
         "zone.js": {
           singleton: true,  // Make sure zone.js is a singleton
@@ -57,11 +68,14 @@ module.exports = {
         react: {
           singleton: true,
           eager: true,
+          requiredVersion: 'auto'
         },
+      
+        
       },
     }),
     new HtmlWebpackPlugin({
-      template: './public/index.html',
+      template: path.resolve(__dirname, "public", "index.html"), // Ensure this file exists
     }),
   ],
 };
